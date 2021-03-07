@@ -1,35 +1,38 @@
 package features
 
-import com.foodie.api.userSessions
+import com.foodie.api.data.datasource.SessionManager
+import com.foodie.api.data.di.dataModule
+import com.foodie.api.domain.di.domainModule
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.response.*
 import io.ktor.serialization.*
-import kotlinx.serialization.json.Json
+import org.koin.ktor.ext.Koin
+import org.koin.ktor.ext.get
 import javax.naming.AuthenticationException
 
-fun Application.installAll() {
+fun Application.installAllFeatures() {
     install(DefaultHeaders)
     install(CallLogging)
+    install(Koin) {
+        modules(domainModule + dataModule)
+    }
     install(ContentNegotiation) {
-        json(Json { prettyPrint = true; isLenient = true })
+        json()
     }
     install(Authentication) {
-        basic(name = "core_auth") {
+        basic {
             realm = "Ktor Server"
             validate { creds ->
-                userSessions
-                    .firstOrNull {
-                        creds.name == it.user.name && creds.password == it.user.password
-                    }
+                get<SessionManager>().getSession(creds.name, creds.password)
             }
         }
-        install(StatusPages) {
-            exception<Throwable> { call.respond(io.ktor.http.HttpStatusCode.InternalServerError) }
-            exception<AuthenticationException> {
-                call.respond(io.ktor.http.HttpStatusCode.Unauthorized)
-            }
+    }
+    install(StatusPages) {
+        exception<Throwable> { call.respond(io.ktor.http.HttpStatusCode.InternalServerError) }
+        exception<AuthenticationException> {
+            call.respond(io.ktor.http.HttpStatusCode.Unauthorized)
         }
     }
 }

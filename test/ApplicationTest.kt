@@ -1,26 +1,62 @@
 package com.foodie.api
 
+import com.foodie.api.domain.model.food.FoodCreating
+import com.foodie.api.routing.food.model.ShareFoodRequest
 import domain.model.auth.AuthModel
+import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.server.testing.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val json = Json { isLenient = true }
+
+
     @Test
     fun testRoot() {
         withTestApplication({ module(testing = true) }) {
-            handleRequest(HttpMethod.Post, "api/v1/authorize").apply {
-                val json = Json { isLenient = true }
-                val auth = AuthModel("name", "pass")
-                val requestJson = json.encodeToString(auth)
-                request.setBody(requestJson)
+            val client = client
+            runBlocking {
+                val authKirill = AuthModel("kirill", "qq")
+                val authLena = AuthModel("lena", "qqa")
+                val newFood = FoodCreating("borsh", "dohuya")
+                val shareRequest = ShareFoodRequest(1, 1)
 
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("HELLO WORLD!", response.content)
+                val kirillToken = client.post<String>(path = "api/v1/authorize", body = json.encodeToString(authKirill)) {
+                    contentType(ContentType.Application.Json)
+                }
+
+                val lenaToken = client.post<String>(path = "api/v1/authorize", body = json.encodeToString(authLena)) {
+                    contentType(ContentType.Application.Json)
+                }
+
+
+                val create = client.post<String>(path = "api/v1/food/add", body = json.encodeToString(newFood)) {
+                    contentType(ContentType.Application.Json)
+                    headers {
+                        append("Authorization", "Basic $kirillToken")
+                    }
+                }
+
+                val share = client.post<String>(path = "api/v1/food/share", body = json.encodeToString(shareRequest)) {
+                    contentType(ContentType.Application.Json)
+                    headers {
+                        append("Authorization", "Basic $kirillToken")
+                    }
+                }
+
+
+                val data = client.get<String>("api/v1/food/existing") {
+                    headers {
+                        append("Authorization", "Basic $lenaToken")
+                    }
+                }
+
+                println(data)
             }
         }
     }

@@ -1,9 +1,12 @@
 package domain.model.auth
 
-import domain.model.User
+import com.foodie.api.domain.model.user.User
 import io.ktor.auth.*
-import kotlin.random.Random.Default.nextInt
+import java.util.*
 
 class Session(val user: User) : Principal {
-    val token = nextInt().toString() + user.hashCode().toString()
+    val token = Base64
+            .getEncoder()
+            .withoutPadding()
+            .encode("${user.name}:${user.password}".encodeToByteArray())
 }

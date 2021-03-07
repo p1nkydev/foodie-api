@@ -1,30 +1,28 @@
 package com.foodie.api
 
-import auth.authApi
-import domain.model.User
-import domain.model.auth.Session
-import features.installAll
+import com.foodie.api.data.database.Database
+import com.foodie.api.routing.food.foodApi
+import com.foodie.api.routing.friend.friendsApi
+import com.foodie.api.routing.room.roomApi
+import features.installAllFeatures
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.routing.*
-
-val userSessions = mutableListOf<Session>()
-val registeredUsers = mutableSetOf<User>()
-
+import routing.auth.authApi
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    installAll()
+    Database.init()
+    installAllFeatures()
 
     routing {
         authApi()
-        authenticate("core_auth") {
-            get("api/v1/food/recommended") {
-
-            }
+        authenticate {
+            friendsApi()
+            roomApi()
+            foodApi()
         }
     }
 }
-
