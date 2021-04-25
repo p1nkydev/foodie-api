@@ -17,6 +17,7 @@ fun ResultRow.toFriend() = Friend(
 fun ResultRow.toFood() = Food(
     id = this[Foods.id],
     name = this[Foods.name],
+    description = this[Foods.description]
 )
 
 fun ResultRow.toUser() = User(

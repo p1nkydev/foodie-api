@@ -33,5 +33,7 @@ object RoomFoodProperties : Table() {
 object FoodProperties : Table() {
     val id = long("id").autoIncrement()
     val foodId = long("foodId")
-    val sharedAmount = integer("sharedAmount")
+    val sharedAmountPercent = integer("sharedAmountPercent")
+    val amountText = text("amountText")
+    val buyDate = long("buyDate")
 }
