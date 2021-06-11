@@ -30,7 +30,7 @@ fun Application.installAllFeatures() {
         }
     }
     install(StatusPages) {
-        exception<Throwable> { call.respond(io.ktor.http.HttpStatusCode.InternalServerError) }
+        exception<Throwable> { t -> call.respond(t) }
         exception<AuthenticationException> {
             call.respond(io.ktor.http.HttpStatusCode.Unauthorized)
         }

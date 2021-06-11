@@ -30,7 +30,14 @@ class FoodDao {
 
                     foodProperties.map {
                         val food = Foods.select { Foods.id eq it.foodId }.first().toFood()
-                        AvailableFood(food.id, food.name, food.description, it.amountText, it.amountPercent, it.buyDate)
+                        AvailableFood(
+                            food.id,
+                            food.name,
+                            food.description,
+                            it.amountText,
+                            it.amountPercent,
+                            it.buyDate
+                        )
                     }
                 }.flatten()
         }
